@@ -1,3 +1,4 @@
+import {Config} from './config.js';
 import {Folder} from './folder.js';
 import {Task} from './task.js';
 
@@ -30,22 +31,20 @@ $(window).on('load', () => {
         folders = content.folders;
         tasks = content.tasks;
         
+        // TASKS OUT FOLDER
         tasks.forEach(task => {
-            if (folders.length > 0) {
-                folders.forEach(folder => {
-                    if (!folder.tasksFolder.includes(task.id)) {
-                        addElementByObject('task', task);
-                    }
-                });
-            } else {
+            if (task.idFolder == null) {
                 addElementByObject('task', task);
             }
         });
 
+        // FOLDERS
         folders.forEach(folder => {
             addElementByObject('folder', folder);
+            // TASKS IN FOLDER
             if (folder.tasksFolder.length > 0) {
                 folder.tasksFolder.forEach(task => {
+                    let taskContainer = $('#' + folder.id).children("#taskContainer" + folder.id);
                     addElementByObject('task', task, taskContainer);
                 });
             }
@@ -56,7 +55,7 @@ $(window).on('load', () => {
 // ADD ELEMENT BY OBJECT
 function addElementByObject(type, object, taskContainer) {
     if (type == 'folder') {
-        // CREATE
+        // CREATE FOLDER
         let folder = new Folder(object);
         folder.createFolder(object, folder);
     }
@@ -73,80 +72,86 @@ function addElementByObject(type, object, taskContainer) {
 }
 
 // CONTAINER CONFIG
+let config = new Config();
+config.init(folders);
+
 $('#container').droppable({
     accept: '.task',
-    drop: function(event, ui) {
-        elementIn(ui.draggable);
+    drop: (event, ui) => {
+        taskIn(ui.draggable);
     }
 });
-function elementIn(element) {
-    if (!element.hasClass('folder')) {
-        let parent = null;
-        folders.forEach(folder => {
-            if (folder.tasksFolder.includes(element[0].id)) {
-                parent = folder;
-                folder.tasksFolder.splice(element[0].id, 1);
-            }
-        });
 
-        element.fadeOut(function() {
-            element
-                .find('.task')
-                .end()
-                .appendTo(container)
-                .fadeIn();
-        });
-
-        let elementObject = tasks.find(task => task.id == element[0].id);
-
-        // TO SERVER
-        (async () => {
-            const rawResponse = await fetch('http://localhost:3000', {
-                method: 'PUT',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(
-                    {
-                        'element': elementObject,
-                        'parent': parent
-                    })
+function taskIn(task) {
+    folders.forEach(folder => {
+        if (folder.tasksFolder.includes(task[0].id)) {
+            task.fadeOut(function() {
+                task
+                    .find('.task')
+                    .end()
+                    .appendTo(container)
+                    .fadeIn();
             });
-            const content = await rawResponse.json();
-            console.log(content);
-        })();
-    }
+
+            folder.tasksFolder.splice(task[0].id, 1);
+            let taskObject = tasks.find(tsk => tsk.id == task[0].id);
+            taskObject.idFolder = null;
+            
+            // TO SERVER
+            (async () => {
+                const rawResponse = await fetch('http://localhost:3000', {
+                    method: 'PUT',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(
+                        {
+                            'element': taskObject,
+                            'parent': folder
+                        }
+                    )
+                });
+                const content = await rawResponse.json();
+                console.log(content);
+            })();
+        }
+    });
 }
 
 // CREATE FOLDER
 $('#buttonCreateFolder').on('click', () => {
     if ($('#nameCreateFolder').val()) {
-        let folder = new Folder();
-        folder.createFolder({
-            'container': container.id, 
-            'id': 'folder' + folders.length,
-            'name': $('#nameCreateFolder').val(),
-            'tasksFolder': [],
-            'folders': folders,
-            'tasks': tasks
-        }, folder);
-        
-        // JSON
-        folders.push(folder);
-        
         // TO SERVER
         (async () => {
+            let data = {
+                'type': 'folder',
+                'container': container.id,
+                'name': $('#nameCreateFolder').val(),
+                'tasksFolder': []
+            }
             const rawResponse = await fetch('http://localhost:3000', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(folder)
+                body: JSON.stringify(data)
             });
             const content = await rawResponse.json();
             console.log(content);
+
+            // FOLDER
+            let element = content.element;
+            let folder = new Folder();
+            folder.createFolder({
+                'container': element.container, 
+                'id': element.id,
+                'name': element.name,
+                'tasksFolder': element.tasksFolder,
+                'tasks': tasks
+            }, folder);
+            $('#' + folder.id).zIndex(999);
         })();
     } else alert('Enter a valid folder');
 });
@@ -156,32 +161,35 @@ $('#buttonCreateTask').on('click', () => {
     if ($('#titleCreateTask').val()) {
         let taskTitle = $('#titleCreateTask').val();
         let taskContent = $('#contentCreateTask').val();
-        
-        let task = new Task();
-        task.createTask({
-            'container': container.id,
-            'id': 'task' + tasks.length,
-            'title': taskTitle,
-            'content': taskContent,
-            'folders': folders,
-            'tasks': tasks
-        }, task);
-
-        // JSON
-        tasks.push(task);
 
         // TO SERVER
         (async () => {
+            let data = {
+                'type': 'task',
+                'container': container.id,
+                'title': taskTitle,
+                'content': taskContent
+            }
             const rawResponse = await fetch('http://localhost:3000', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(task)
+                body: JSON.stringify(data)
             });
             const content = await rawResponse.json();
             console.log(content);
+
+            // TASK
+            let element = content.element;
+            let task = new Task();
+            task.createTask({
+                'container': element.container,
+                'id': element.id,
+                'title': element.title,
+                'content': element.content
+            }, task);
         })();
     } else alert('Enter a valid task');
 });

@@ -42,36 +42,37 @@ html, body {
 
 /* FORM TASK */
 #createTask {
+    width: 100%;
     background-color: rgb(124, 195, 91);
-    padding: 0.5em 10.5em;
-    text-align: center;
-}
-#createTask div {
-    text-align: left;
+    padding: 0.5em 0;
+
+    display: flex;
+    justify-content: center;
 }
 #titleCreateTask {
-    width: 13%;
+    width: 18.8%;
     height: 1.9em;
     outline: none;
     padding-left: 1em;
     font-size: 1.1em;
-    margin-bottom: 0.4em;
+    margin-right: 0.22em;
 }
 #contentCreateTask {
-    max-width: 98.65%;
-    min-width: 12%;
-    width: 98.65%;
-    height: 5em;
-    min-height: 5em;
+    min-width: 50%;
+    max-width: 50%;
+    width: 50%;
+    height: 1.3em;
+    min-height: 1.3em;
     max-height: 20em;
     outline: none;
-    padding: 0.5em 0 0.5em 1em;
+    padding: 0.375em 0 0.375em 1em;
     font-size: 1.1em;
+    margin-right: 0.22em;
 }
 #buttonCreateTask {
     width: 12em;
     cursor: pointer;
-    padding: 0.53em 2em;
+    padding: 0.42em 2em;
     border: none;
     color: white;
     background-color: rgb(82, 123, 199);
@@ -86,11 +87,15 @@ html, body {
 #container {
     border: 1em solid black;
     width: 98.5%;
-    min-height: 72.2%;
+    min-height: 84.7%;
+    height: fit-content;
     /* SCREEN WALLPAPER */
 
     display: flex;
     flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    align-content: flex-start;
 }
 /* FOLDER */
 .folder {
@@ -134,7 +139,7 @@ html, body {
 }
 
 /* TASK */
-#taskContainer {
+.taskContainer {
     width: 100%;
     height: 100%;
     display: flex;
@@ -142,8 +147,10 @@ html, body {
 }
 .task {
     cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
     margin: 0.3em;
-    width: 160px;
+    width: 163.3px;
     height: 90px;
     background-color: rgb(124, 195, 91);
     
@@ -163,6 +170,8 @@ html, body {
 }
 .task:active {
     cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
 }
 .removeTask:after {
     content: "X";
@@ -178,19 +187,27 @@ html, body {
     right: 0.5em;
 }
 .zoomTask {
-    transition: width .3s ease, height .3s ease;
-    width: 250px;
+    width: fit-content;
+    min-height: 90px;
     height: fit-content;
 }
 .task {
     font-size: 0.9em;
 }
 .task h4 {
-    margin: 0.3em 0 0 0;
+    margin: 0.3em 0.8em 0 0.8em;
 }
 .task p {
     font-weight: normal;
-    margin: 0.3em 0 0.5em 0;
+    margin: 0.3em 0.8em 0.5em 0.8em;
     display: none;
-    word-wrap: break-word;
+    white-space: pre;
+}
+
+.selected {
+    background-color: rgb(102, 160, 75);
+}
+#group {
+    display: flex;
+    flex-wrap: wrap;
 }

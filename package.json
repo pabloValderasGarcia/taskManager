@@ -1,7 +1,12 @@
 {
   "dependencies": {
     "@nestjs/cli": "^9.1.5",
+    "body-parser": "^1.20.1",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
     "jquery": "^3.6.2",
-    "jqueryui": "^1.11.1"
+    "jqueryui": "^1.11.1",
+    "mongodb": "^4.13.0",
+    "mongoose": "^6.8.1"
   }
 }

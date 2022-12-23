@@ -10,15 +10,13 @@
     </head>
     <body>
         <div id="createFolder">
-            <input id="nameCreateFolder" type="text" maxlength="11" placeholder="Enter name folder"/>
+            <input id="nameCreateFolder" type="text" maxlength="10" placeholder="Enter name folder"/>
             <input id="buttonCreateFolder" type="submit" value="Create folder"/>
         </div>
-        <div id="createTask" style="display: flex; flex-direction: column; justify-content: flex-start;">
-            <div>
-                <input id="titleCreateTask" type="text" maxlength="11" placeholder="Enter title task"/>
-                <input id="buttonCreateTask" type="submit" value="Create task"/>
-            </div>
+        <div id="createTask">
+            <input id="titleCreateTask" type="text" maxlength="17" placeholder="Enter title task"/>
             <textarea id="contentCreateTask" type="text" maxlength="200" placeholder="Enter content task"></textarea>
+            <input id="buttonCreateTask" type="submit" value="Create task"/>
         </div>
         <div id="container"></div>
         <script src="node_modules/jquery/dist/jquery.min.js"></script>

@@ -7,8 +7,7 @@ export class Folder {
         this.id = config.id;
         this.name = config.name;
         this.tasksFolder = config.tasksFolder;
-        let folders = config.folders;
-        let tasks = config.tasks;
+        this.tasks = null;
 
         // VALUES HTML
         let folder = document.createElement('div');
@@ -18,8 +17,8 @@ export class Folder {
         folderName.innerHTML = this.name;
         folderName.id = 'folderName' + folder.id;
         let taskContainer = document.createElement('div');
-        this.taskContainer = taskContainer.id;
-        taskContainer.id = 'taskContainer';
+        taskContainer.id = 'taskContainer' + this.id;
+        taskContainer.classList.add('taskContainer');
 
         if (config.position && (config.position.top && config.position.left)) {
             this.x = config.position.left;
@@ -42,14 +41,12 @@ export class Folder {
         remover.classList.add('removeFolder');
         folder.append(remover);
         $('#' + remover.id).on('click', () => {
-            this.removeFolder(folders, tasks, folder, folderObject);
+            this.removeFolder(folderObject);
         });
     }
 
     // PUT IN A TASK
     taskIn(taskContainer, task) {
-        task.idFolder = this.id;
-        this.tasksFolder.push(task[0].id);
         task.fadeOut(function() {
             task.find(".task")
                 .end()
@@ -57,25 +54,45 @@ export class Folder {
                 .fadeIn()
         });
 
-        // TO SERVER
+        // GET ACTUAL TASKS
         (async () => {
             const rawResponse = await fetch('http://localhost:3000', {
-                method: 'PUT',
+                method: 'GET',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({'element': this})
+                }
             });
             const content = await rawResponse.json();
-            console.log(content);
-        })();
+            this.tasks = content.tasks;
 
-        this.updatePosition($('#' + this.id).position());
+            this.tasksFolder.push(task[0].id);
+            task.idFolder = this.id;
+            
+            let taskObject = this.tasks.find(tsk => tsk.id == task[0].id);
+            taskObject.idFolder = this.id;
+            this.tasks.splice(this.tasks.indexOf(taskObject.id), 1, taskObject);
+
+            // TO SERVER
+            (async () => {
+                const rawResponse = await fetch('http://localhost:3000', {
+                    method: 'PUT',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({'element': this})
+                });
+                const content = await rawResponse.json();
+                console.log(content);
+
+                this.updatePosition($('#' + this.id).position());
+            })();
+        })();
     }
 
     // REMOVE FOLDER
-    removeFolder(folders, tasks, folder, folderObject) {
+    removeFolder(folderObject) {
         // TO SERVER
         (async () => {
             const rawResponse = await fetch('http://localhost:3000', {
@@ -89,32 +106,7 @@ export class Folder {
             const content = await rawResponse.json();
             console.log(content);
 
-            folders = content.folders;
-            tasks = content.tasks;
-
-            folders.splice(folder, 1);
-            this.tasksFolder.forEach(task => {
-                task = $('#' + task);
-                if (task.parent().parent()[0] == $('#' + folder.id)[0]) {
-                    this.tasksFolder.splice(this.tasksFolder.indexOf(task.id, 1));
-                    tasks.splice(tasks.indexOf(task, 1));
-
-                    // TO SERVER
-                    (async () => {
-                        await fetch('http://localhost:3000/tasks', {
-                            method: 'DELETE',
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({'tasks': tasks})
-                        });
-                    })();
-                }
-            });
-            
-            folder.remove();
-            window.location.reload();
+            $('#' + this.id).remove();
         })();
     }
 

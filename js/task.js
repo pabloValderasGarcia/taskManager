@@ -7,8 +7,7 @@ export class Task {
         this.id = config.id;
         this.title = config.title;
         this.content = config.content;
-        let folders = config.folders;
-        let tasks = config.tasks;
+        this.idFolder = null;
 
         // VALUES HTML
         let task = document.createElement('div');
@@ -38,12 +37,12 @@ export class Task {
         remove.classList.add('removeTask');
         task.append(remove);
         $('#' + remove.id).on('click', () => {
-            this.removeTask(folders, tasks, taskObject);
+            this.removeTask(taskObject);
         });
     }
  
     // REMOVE TASK
-    removeTask(folders, tasks, taskObject) {
+    removeTask(taskObject) {
         // TO SERVER
         (async () => {
             const rawResponse = await fetch('http://localhost:3000', {
@@ -57,30 +56,7 @@ export class Task {
             const content = await rawResponse.json();
             console.log(content);
 
-            folders = content.folders;
-            tasks = content.tasks;
-
-            folders.forEach(folder => {
-                if (folder.tasksFolder.includes(this.id)) {
-                    folder.tasksFolder.splice(this.id, 1);
-                    
-                    // TO SERVER
-                    (async () => {
-                        await fetch('http://localhost:3000/tasks', {
-                            method: 'DELETE',
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({'folders': folders})
-                        });
-                    })();
-                }
-            });
-            tasks.splice(this, 1);
             $('#' + this.id).remove();
-
-            window.location.reload();
         })();
     }
 
@@ -88,7 +64,6 @@ export class Task {
     setJQueryEvents(task, content) {
         // DRAGGABLE
         $('#' + task.id).draggable({
-            containment: 'parent',
             stack: 'div',
             revert: true
         });
