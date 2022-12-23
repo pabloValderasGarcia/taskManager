@@ -182,7 +182,14 @@ app.delete('/tasks', async (req, res) => {
     let tasks = req.body;
     try {
         for (const task of tasks) {
+            let realTask = await Task.find({id: task});
             await Task.deleteOne({id: task});
+            await Folder.updateOne(
+                {id: realTask[0].idFolder}, 
+                {$pullAll: {
+                    tasksFolder: [task]
+                }}
+            );
         }
         res.json({message: 'deleted'});
     } catch (err) {
